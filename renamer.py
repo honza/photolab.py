@@ -1,12 +1,10 @@
 import os
-import sys
 import Image # Python Imaging Library
 
 
 class PyRenamer(object):
 
     def __init__(self, path, place):
-        print path
         self.place = place
         self.path = path
         self.count = 0
@@ -57,12 +55,3 @@ class PyRenamer(object):
             n = "%s_%s_%s.jpg" % (f[1], self.place, num,)
             n = os.path.join(self.path, n)
             os.rename(f[0], n)
-    
-
-if __name__ == '__main__':
-    try:
-        place = sys.argv[1]
-    except IndexError:
-        print 'No place specified'
-        sys.exit(0)
-    p = PyRenamer(place)
