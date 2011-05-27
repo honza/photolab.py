@@ -1,1 +1,112 @@
-yo
+<!DOCTYPE html>  <html> <head>   <title>main.py</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               main.py             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Photolab.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">bottle</span> <span class="kn">import</span> <span class="n">route</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">get</span><span class="p">,</span> <span class="n">post</span>
+<span class="kn">from</span> <span class="nn">bottle</span> <span class="kn">import</span> <span class="n">jinja2_view</span> <span class="k">as</span> <span class="n">view</span>
+<span class="kn">from</span> <span class="nn">bottle</span> <span class="kn">import</span> <span class="n">static_file</span><span class="p">,</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">resizer</span> <span class="kn">import</span> <span class="n">Resizer</span>
+<span class="kn">from</span> <span class="nn">renamer</span> <span class="kn">import</span> <span class="n">PyRenamer</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>We need to know where the images are stored</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;Please supply a path to your files.&quot;</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">path</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Set up some user-specific globals</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="n">SOURCE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="n">THUMB_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SOURCE</span><span class="p">,</span> <span class="s">&#39;tmp&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">THUMB_DIR</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">THUMB_DIR</span><span class="p">)</span>
+<span class="n">DONE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SOURCE</span><span class="p">,</span> <span class="s">&#39;done&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">DONE_DIR</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">DONE_DIR</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Set up some globals for photolab itself</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="n">ROOT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
+<span class="n">STATIC</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ROOT</span><span class="p">,</span> <span class="s">&#39;static&#39;</span><span class="p">)</span>
+<span class="n">EXTENSIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s">&#39;.JPG&#39;</span><span class="p">,</span> <span class="s">&#39;.jpeg&#39;</span><span class="p">,</span> <span class="s">&#39;.JPEG&#39;</span><span class="p">,)</span>
+
+<span class="k">def</span> <span class="nf">_copy_image</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy an image from its source directory to the done directory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SOURCE</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+    <span class="n">dest</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DONE_DIR</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&quot;cp </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_remove_junk</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+    <span class="n">new</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">array</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">EXTENSIONS</span><span class="p">):</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new</span>
+
+
+<span class="nd">@route</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+<span class="nd">@view</span><span class="p">(</span><span class="s">&#39;index&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="n">_remove_junk</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">SOURCE</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s">&#39;pictures&#39;</span><span class="p">:</span> <span class="n">files</span>
+    <span class="p">}</span>
+
+
+<span class="nd">@route</span><span class="p">(</span><span class="s">&#39;/static/:filename&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">server_static</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Server application files (js, css)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">static_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">STATIC</span><span class="p">)</span>
+
+
+<span class="nd">@route</span><span class="p">(</span><span class="s">&#39;/media/:filename&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">media</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Server user&#39;s media</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">static_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">THUMB_DIR</span><span class="p">)</span>
+
+
+<span class="nd">@get</span><span class="p">(</span><span class="s">&#39;/process&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">ajax</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create thumbnails for files in the source directory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">Resizer</span><span class="p">(</span><span class="n">SOURCE</span><span class="p">,</span> <span class="n">THUMB_DIR</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">e</span>
+    <span class="k">return</span> <span class="s">&#39;done!&#39;</span>
+
+
+<span class="nd">@get</span><span class="p">(</span><span class="s">&#39;/sort/&#39;</span><span class="p">)</span>
+<span class="nd">@view</span><span class="p">(</span><span class="s">&#39;home&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sort</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Present user with a screen where they can discard images</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pictures</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">THUMB_DIR</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s">&#39;pictures&#39;</span><span class="p">:</span> <span class="n">pictures</span><span class="p">,</span>
+        <span class="s">&#39;process&#39;</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="p">}</span>
+
+
+<span class="nd">@post</span><span class="p">(</span><span class="s">&#39;/create-final&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">final</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Take all selected images and copy their originals into `done` and then</span>
+<span class="sd">    rename them into something useful.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pictures</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">forms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;pictures&#39;</span><span class="p">)</span>
+    <span class="n">place</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">forms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;place&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pictures</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">):</span>
+        <span class="n">_copy_image</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">PyRenamer</span><span class="p">(</span><span class="n">DONE_DIR</span><span class="p">,</span> <span class="n">place</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">e</span>
+    <span class="k">return</span> <span class="s">&#39;ok&#39;</span>
+
+
+<span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span> <span class="n">reloader</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
