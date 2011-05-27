@@ -1,5 +1,5 @@
 """
-Photolap.py
+Photolab.py
 """
 import os
 import sys
