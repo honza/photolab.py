@@ -16,6 +16,10 @@ implemented in Python.
 * jinja2 templates
 * Python imaging library
 
+### Source
+
+[Annotated source][source]
+
 ### License
 
     Copyright (c) 2011, Honza Pokorny
@@ -42,3 +46,4 @@ implemented in Python.
     ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 [coffee]: https://github.com/honza/photolab.coffee
+[source]: http://honza.github.com/photolab.py/
