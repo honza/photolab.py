@@ -5,10 +5,14 @@ EXTENSIONS = ('.jpg', '.JPG', '.jpeg', '.JPEG',)
 
 class Resizer(object):
 
-    def __init__(self, source, destination, quality):
+    def __init__(self, source, destination, quality, extensions=None):
         self.source = source
         self.destination = destination
         self.quality = quality
+        if not extensions:
+            self.extensions = EXTENSIONS
+        else:
+            self.extensions = extensions
         self.cwd = os.getcwd()
         self.path = os.path.join(self.cwd, self.source)
         self.files = self._get_files()
@@ -21,8 +25,9 @@ class Resizer(object):
     def run(self):
 
         for a in self.files:
-            if not a.endswith(EXTENSIONS):
+            if not a.endswith(self.extensions):
                 continue
+            print a
             name = os.path.join(self.path, a)
             img = Image.open(name)
 

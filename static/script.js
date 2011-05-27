@@ -44,7 +44,7 @@
     $('#process-btn').click(function() {
       var place = prompt("Place?");
       $.post('/create-final', {pictures: pictures.join(), place: place}, function() {
-        console.log('All done');
+        alert('Success!');
       });
       return false;
     });
